@@ -1,0 +1,255 @@
+/*
+    Estilos de la página de inicio (home).
+    Las clases están prefijadas con "home-" para no afectar otras páginas.
+*/
+
+/* ---------- Hero ---------- */
+
+.home-hero {
+    padding: 5rem 0 6rem;
+    overflow: hidden;
+}
+
+.home-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bt-verde-oscuro);
+    background-color: var(--bt-fondo-alt);
+    border: 1px solid var(--bt-borde);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    margin-bottom: 1.25rem;
+}
+
+.home-hero__title {
+    font-size: clamp(2.1rem, 4vw, 3.25rem);
+    font-weight: 700;
+    line-height: 1.08;
+}
+
+.home-hero__title .underline {
+    position: relative;
+    white-space: nowrap;
+}
+
+.home-hero__title .underline::after {
+    content: "";
+    position: absolute;
+    left: 0.05em;
+    right: 0.05em;
+    bottom: 0.06em;
+    height: 0.28em;
+    background-color: var(--bt-dorado);
+    opacity: 0.45;
+    z-index: -1;
+}
+
+.home-hero__lead {
+    font-size: 1.1rem;
+    color: #465447;
+    max-width: 34rem;
+}
+
+/* Ilustración: insignia central + categorías orbitando */
+
+.home-hero__art {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+}
+
+.home-hero__ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #ffffff, var(--bt-fondo-alt) 70%);
+    border: 1px solid var(--bt-borde);
+}
+
+.home-hero__badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background-color: var(--bt-verde);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 18px 30px -12px rgba(30, 94, 42, 0.45);
+}
+
+.home-hero__badge i {
+    font-size: 1.8rem;
+    margin-bottom: 0.15rem;
+}
+
+.home-hero__badge span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.home-hero__chip {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #fff;
+    border: 1px solid var(--bt-borde);
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bt-tinta);
+    box-shadow: 0 10px 20px -14px rgba(22, 36, 26, 0.35);
+}
+
+.home-hero__chip i {
+    color: var(--bt-verde-oscuro);
+}
+
+.home-hero__chip--salud     { top: 4%;  left: 2%; }
+.home-hero__chip--asesorias { top: 8%;  right: -2%; }
+.home-hero__chip--deportes  { bottom: 6%; left: -4%; }
+.home-hero__chip--cultura   { bottom: 2%; right: 4%; }
+
+/* ---------- Secciones generales ---------- */
+
+.home-section {
+    padding: 4.5rem 0;
+}
+
+.home-section__eyebrow {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bt-verde-oscuro);
+}
+
+.home-section__title {
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+    font-weight: 700;
+}
+
+/* ---------- Publicaciones ---------- */
+
+.home-card {
+    border: 1px solid var(--bt-borde);
+    border-radius: 14px;
+    overflow: hidden;
+    height: 100%;
+    background-color: #fff;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 30px -18px rgba(22, 36, 26, 0.35);
+}
+
+.home-card__media {
+    aspect-ratio: 16 / 10;
+    background-color: var(--bt-fondo-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bt-verde);
+    font-size: 2rem;
+}
+
+.home-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-card__body {
+    padding: 1.15rem 1.25rem 1.4rem;
+}
+
+/* ---------- Eventos ---------- */
+
+.home-evento {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    background-color: #fff;
+    border: 1px solid var(--bt-borde);
+    border-radius: 12px;
+}
+
+.home-evento + .home-evento {
+    margin-top: 0.75rem;
+}
+
+.home-evento__fecha {
+    flex: 0 0 auto;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 10px;
+    background-color: var(--bt-fondo-alt);
+    color: var(--bt-verde-oscuro);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.home-evento__fecha .dia {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.home-evento__fecha .mes {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.home-evento__horas {
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bt-verde-oscuro);
+    background-color: var(--bt-fondo-alt);
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    white-space: nowrap;
+}
+
+/* ---------- Servicios ---------- */
+
+.home-servicio {
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+.home-servicio__icono {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background-color: var(--bt-fondo-alt);
+    color: var(--bt-verde-oscuro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}

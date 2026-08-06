@@ -1,0 +1,25 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Mi panel | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-1">
+    Hola, {{ request.user.get_full_name }}
+</h1>
+
+<p class="text-muted mb-4">
+    Panel de administración.
+</p>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <p class="mb-0">
+            Aquí podrás administrar roles, configuraciones, catálogos, usuarios y permisos. Esta sección se irá completando en las próximas iteraciones.
+        </p>
+    </div>
+</div>
+
+{% endblock %}

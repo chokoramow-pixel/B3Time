@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+    {% include 'components/navbar/navbar_private.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+
+        <div class="col-12 col-lg-3 col-xl-2 mb-4 mb-lg-0">
+            {% include 'components/sidebar/sidebar.html' %}
+        </div>
+
+        <div class="col-12 col-lg-9 col-xl-10">
+            {% block dashboard_content %}
+            {% endblock %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

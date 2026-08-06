@@ -1,3 +1,13 @@
 from django.contrib import admin
 
-# Register your models here.
+from bienestar.models import HorasBienestar, Asesoria
+
+
+@admin.register(HorasBienestar)
+class HorasBienestarAdmin(admin.ModelAdmin):
+    list_display = ("id", "asistencia", "cantidad_horas", "asignado_por", "fecha")
+
+
+@admin.register(Asesoria)
+class AsesoriaAdmin(admin.ModelAdmin):
+    list_display = ("id", "tipo", "aprendiz", "personal_bienestar", "estado", "fecha_solicitud")

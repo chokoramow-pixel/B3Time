@@ -115,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
@@ -131,4 +131,33 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-AUTH_USER_MODEL = "core.Usuario"
+AUTH_USER_MODEL = "usuarios.Usuario"
+
+
+# Autenticación
+# https://docs.djangoproject.com/en/6.0/topics/auth/default/
+
+LOGIN_URL = "usuarios:login"
+
+LOGIN_REDIRECT_URL = "usuarios:dashboard"
+
+LOGOUT_REDIRECT_URL = "index"
+
+
+# Mensajes (para que coincidan con las clases de alerta de Bootstrap)
+# https://docs.djangoproject.com/en/6.0/ref/contrib/messages/
+
+from django.contrib.messages import constants as message_constants
+
+MESSAGE_TAGS = {
+    message_constants.ERROR: "danger",
+}
+
+
+# Correo (para el restablecimiento de contraseña)
+# En desarrollo los correos se imprimen en la consola.
+# En producción se debe configurar un backend SMTP real.
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DEFAULT_FROM_EMAIL = "Be Time <no-responder@betime.sena.edu.co>"
