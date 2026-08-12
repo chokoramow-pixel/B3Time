@@ -17,6 +17,37 @@ urlpatterns = [
     path("dashboard/bienestar/", views.dashboard_bienestar, name="dashboard_bienestar"),
     path("dashboard/admin/", views.dashboard_admin, name="dashboard_admin"),
 
+    # ---------- Panel: Programas de Formación (Administrador) ----------
+
+    path("panel/programas/", views.ProgramaFormacionListView.as_view(), name="programas_lista"),
+    path("panel/programas/exportar/", views.exportar_programas, name="programas_exportar"),
+    path("panel/programas/crear/", views.ProgramaFormacionCreateView.as_view(), name="programas_crear"),
+    path("panel/programas/<int:pk>/editar/", views.ProgramaFormacionUpdateView.as_view(), name="programas_editar"),
+    path("panel/programas/<int:pk>/eliminar/", views.ProgramaFormacionDeleteView.as_view(), name="programas_eliminar"),
+
+    # ---------- Panel: Jornadas (Administrador) ----------
+
+    path("panel/jornadas/", views.JornadaListView.as_view(), name="jornadas_lista"),
+    path("panel/jornadas/exportar/", views.exportar_jornadas, name="jornadas_exportar"),
+    path("panel/jornadas/crear/", views.JornadaCreateView.as_view(), name="jornadas_crear"),
+    path("panel/jornadas/<int:pk>/editar/", views.JornadaUpdateView.as_view(), name="jornadas_editar"),
+    path("panel/jornadas/<int:pk>/eliminar/", views.JornadaDeleteView.as_view(), name="jornadas_eliminar"),
+
+    # ---------- Panel: Fichas (Bienestar / Administrador) ----------
+
+    path("panel/fichas/", views.FichaListView.as_view(), name="fichas_lista"),
+    path("panel/fichas/exportar/", views.exportar_fichas, name="fichas_exportar"),
+    path("panel/fichas/crear/", views.FichaCreateView.as_view(), name="fichas_crear"),
+    path("panel/fichas/<int:pk>/editar/", views.FichaUpdateView.as_view(), name="fichas_editar"),
+    path("panel/fichas/<int:pk>/eliminar/", views.FichaDeleteView.as_view(), name="fichas_eliminar"),
+
+    # ---------- Panel: Aprendices (Bienestar / Administrador) ----------
+    # Se crean por auto-registro; aquí solo se editan (ficha/estado).
+
+    path("panel/aprendices/", views.AprendizListView.as_view(), name="aprendices_lista"),
+    path("panel/aprendices/exportar/", views.exportar_aprendices, name="aprendices_exportar"),
+    path("panel/aprendices/<int:pk>/editar/", views.AprendizUpdateView.as_view(), name="aprendices_editar"),
+
     # ---------- Restablecer contraseña ----------
 
     path(

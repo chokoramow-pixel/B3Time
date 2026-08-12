@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 fichas.forEach(function (ficha) {
                     const opcion = document.createElement('option');
                     opcion.value = ficha.id;
-                    opcion.textContent = `${ficha.numero_ficha} - ${ficha.jornada}`;
+                    opcion.textContent = `${ficha.numero_ficha} - ${ficha.jornada_nombre}`;
                     fichaSelect.appendChild(opcion);
                 });
             })

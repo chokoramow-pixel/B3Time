@@ -16,9 +16,21 @@ Mi panel | Be Time
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
-        <p class="mb-0">
-            Aquí podrás administrar roles, configuraciones, catálogos, usuarios y permisos. Esta sección se irá completando en las próximas iteraciones.
+        <p class="mb-3">
+            Aquí podrás administrar roles, configuraciones, catálogos, usuarios y permisos. Esta sección se irá completando en las próximas iteraciones. Mientras tanto, puedes gestionar eventos y publicaciones igual que Bienestar:
         </p>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'eventos:panel_lista' %}" class="btn btn-success">
+                <i class="bi bi-calendar-event"></i> Gestionar eventos
+            </a>
+            <a href="{% url 'publicaciones:panel_lista' %}" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-text"></i> Gestionar publicaciones
+            </a>
+            <a href="/admin/" class="btn btn-outline-secondary">
+                <i class="bi bi-gear"></i> Panel de Django
+            </a>
+        </div>
     </div>
 </div>
 

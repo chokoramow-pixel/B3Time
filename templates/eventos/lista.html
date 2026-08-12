@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Eventos | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="home-section">
+    <div class="container">
+
+        <div class="mb-4">
+            <div class="home-section__eyebrow mb-1">Agenda</div>
+            <h1 class="home-section__title mb-0">Próximos eventos</h1>
+        </div>
+
+        {% if eventos %}
+            <div>
+                {% for evento in eventos %}
+                    <a href="{% url 'eventos:detalle' evento.id %}" class="text-decoration-none text-reset">
+                        <div class="home-evento">
+
+                            {% if evento.imagen %}
+                                <img src="{{ evento.imagen.url }}" alt="" class="home-evento__img">
+                            {% endif %}
+
+                            <div class="home-evento__fecha">
+                                <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
+                                <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">{{ evento.titulo }}</div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
+                                </div>
+                            </div>
+
+                            <div class="home-evento__horas">
+                                {{ evento.horas_otorgadas }} horas
+                            </div>
+
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="home-card p-4 text-center text-muted">
+                No hay eventos programados por el momento.
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

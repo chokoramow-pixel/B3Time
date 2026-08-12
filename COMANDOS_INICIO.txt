@@ -15,8 +15,8 @@ cd B3Time
 
 Para trabajar directamente en tu rama personal:
 
-git checkout jandres
-git pull origin jandres
+git checkout main
+git pull origin main
 
 
 ----------------------------------------------------------

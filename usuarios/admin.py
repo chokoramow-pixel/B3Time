@@ -3,6 +3,7 @@ from django.contrib import admin
 from usuarios.models import (
     Rol,
     ProgramaFormacion,
+    Jornada,
     Ficha,
     Usuario,
     Aprendiz,
@@ -26,6 +27,11 @@ class RolAdmin(admin.ModelAdmin):
 @admin.register(ProgramaFormacion)
 class ProgramaFormacionAdmin(admin.ModelAdmin):
     list_display = ("id", "nombre", "codigo", "nivel_formacion", "estado")
+
+
+@admin.register(Jornada)
+class JornadaAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre")
 
 
 @admin.register(Ficha)

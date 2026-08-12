@@ -1,0 +1,59 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Fichas | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Fichas</h1>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='usuarios:fichas_exportar' %}
+        <a href="{% url 'usuarios:fichas_crear' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Nueva ficha
+        </a>
+    </div>
+</div>
+
+{% if fichas %}
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Programa</th>
+                    <th>Jornada</th>
+                    <th>Fecha inicio</th>
+                    <th>Fecha fin</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ficha in fichas %}
+                    <tr>
+                        <td>{{ ficha.numero_ficha }}</td>
+                        <td>{{ ficha.programa_formacion.nombre }}</td>
+                        <td>{{ ficha.jornada.nombre }}</td>
+                        <td>{{ ficha.fecha_inicio|date:"d/m/Y" }}</td>
+                        <td>{{ ficha.fecha_fin|date:"d/m/Y" }}</td>
+                        <td><span class="badge text-bg-light border">{{ ficha.estado }}</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'usuarios:fichas_editar' ficha.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <a href="{% url 'usuarios:fichas_eliminar' ficha.id %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            Todavía no hay fichas registradas.
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

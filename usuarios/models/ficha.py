@@ -20,8 +20,10 @@ class Ficha(models.Model):
         unique=True
     )
 
-    jornada = models.CharField(
-        max_length=30
+    jornada = models.ForeignKey(
+        "usuarios.Jornada",
+        on_delete=models.PROTECT,
+        related_name="fichas"
     )
 
     # ---------- Fechas ----------

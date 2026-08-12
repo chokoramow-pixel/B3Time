@@ -131,6 +131,14 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+
+# Archivos subidos por los usuarios (imágenes de publicaciones, etc.)
+# https://docs.djangoproject.com/en/6.0/topics/files/
+
+MEDIA_URL = 'media/'
+
+MEDIA_ROOT = BASE_DIR / "media"
+
 AUTH_USER_MODEL = "usuarios.Usuario"
 
 
@@ -158,6 +166,10 @@ MESSAGE_TAGS = {
 # En desarrollo los correos se imprimen en la consola.
 # En producción se debe configurar un backend SMTP real.
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-DEFAULT_FROM_EMAIL = "Be Time <no-responder@betime.sena.edu.co>"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "betimesena@gmail.com"
+EMAIL_HOST_PASSWORD = "axtdnrqnnecodqxh"
+DEFAULT_FROM_EMAIL = "Be Time <betimesena@gmail.com>"

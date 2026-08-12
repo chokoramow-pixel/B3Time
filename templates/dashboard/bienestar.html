@@ -16,9 +16,18 @@ Mi panel | Be Time
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
-        <p class="mb-0">
-            Aquí podrás administrar aprendices, asignar horas de bienestar, gestionar publicaciones, eventos y asesorías. Esta sección se irá completando en las próximas iteraciones.
+        <p class="mb-3">
+            Desde aquí puedes gestionar los eventos y publicaciones de Bienestar. Próximamente también podrás asignar horas de bienestar y gestionar asesorías.
         </p>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'eventos:panel_lista' %}" class="btn btn-success">
+                <i class="bi bi-calendar-event"></i> Gestionar eventos
+            </a>
+            <a href="{% url 'publicaciones:panel_lista' %}" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-text"></i> Gestionar publicaciones
+            </a>
+        </div>
     </div>
 </div>
 

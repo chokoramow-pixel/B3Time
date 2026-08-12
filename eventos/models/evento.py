@@ -23,6 +23,12 @@ class Evento(models.Model):
         default=0
     )
 
+    imagen = models.ImageField(
+        upload_to="eventos/",
+        null=True,
+        blank=True
+    )
+
     # ---------- Relaciones ----------
 
     creado_por = models.ForeignKey(
