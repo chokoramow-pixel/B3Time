@@ -1,0 +1,18 @@
+<!-- Botones de exportar reutilizables.
+     Uso: incluir con la variable base_url apuntando al nombre de la URL de exportación. -->
+<div class="btn-group">
+    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="bi bi-download"></i> Exportar
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="{% url base_url %}?formato=excel">
+            <i class="bi bi-file-earmark-excel text-success"></i> Excel (.xlsx)
+        </a></li>
+        <li><a class="dropdown-item" href="{% url base_url %}?formato=word">
+            <i class="bi bi-file-earmark-word text-primary"></i> Word (.docx)
+        </a></li>
+        <li><a class="dropdown-item" href="{% url base_url %}?formato=pdf">
+            <i class="bi bi-file-earmark-pdf text-danger"></i> PDF
+        </a></li>
+    </ul>
+</div>

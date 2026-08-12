@@ -1,0 +1,57 @@
+/*
+    Tokens de marca — Be Time / Bienestar al Aprendiz SENA
+    Verde institucional + un dorado cálido como acento secundario.
+*/
+
+:root {
+    --bt-verde: #2E8B3D;
+    --bt-verde-oscuro: #1E5E2A;
+    --bt-tinta: #16241A;
+    --bt-fondo-alt: #F3F8F0;
+    --bt-dorado: #E8A233;
+    --bt-borde: #E1E9DC;
+}
+
+body {
+    color: var(--bt-tinta);
+    background-color: #FFFFFF;
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-display {
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    letter-spacing: -0.01em;
+}
+
+a {
+    color: var(--bt-verde-oscuro);
+}
+
+.btn-success {
+    background-color: var(--bt-verde);
+    border-color: var(--bt-verde);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background-color: var(--bt-verde-oscuro);
+    border-color: var(--bt-verde-oscuro);
+}
+
+.btn-outline-success {
+    color: var(--bt-verde-oscuro);
+    border-color: var(--bt-verde);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--bt-verde);
+    border-color: var(--bt-verde);
+}
+
+.text-bt-verde {
+    color: var(--bt-verde-oscuro);
+}
+
+.bg-bt-alt {
+    background-color: var(--bt-fondo-alt);
+}
