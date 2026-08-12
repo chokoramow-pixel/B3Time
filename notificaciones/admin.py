@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from notificaciones.models import Notificacion
+
+
+@admin.register(Notificacion)
+class NotificacionAdmin(admin.ModelAdmin):
+    list_display = ("id", "usuario", "titulo", "leida", "fecha_creacion")
