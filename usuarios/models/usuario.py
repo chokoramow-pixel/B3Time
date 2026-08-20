@@ -35,16 +35,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         blank=True
     )
 
-    # ---------- Relaciones ----------
-
-    rol = models.ForeignKey(
-        "usuarios.Rol",
-        on_delete=models.PROTECT,
-        related_name="usuarios",
-        null=True,
-        blank=True
-    )
-
     # ---------- Estados ----------
 
     is_active = models.BooleanField(

@@ -1,33 +1,29 @@
-{# Navbar para usuarios autenticados: aprendices, personal de bienestar y administradores #}
-<nav class="navbar navbar-expand-lg bg-white shadow-sm">
-    <div class="container-fluid px-3 px-lg-4">
+{% load static %}
+<nav class="navbar bg-white shadow-sm">
+    <div class="container-fluid px-3 px-lg-4 d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
 
-        <a class="navbar-brand fw-bold" href="{% url 'usuarios:dashboard' %}">
-            Be Time
+        <a class="navbar-brand mb-0" href="{% url 'usuarios:dashboard' %}">
+            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="67">
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarPrivate">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
 
-        <div class="collapse navbar-collapse" id="navbarPrivate">
+            <span class="normal text-nowrap">
+                <span class="fw-semibold">{{ request.user.nombres }}</span>
+                <span class="badge text-bg-light border ms-1">
+                    {% if request.user.administrador %}
+                        Administrador
+                    {% elif request.user.personal_bienestar %}
+                        Bienestar
+                    {% elif request.user.aprendiz %}
+                        Aprendiz
+                    {% endif %}
+                </span>
+            </span>
 
-            <ul class="navbar-nav ms-auto align-items-lg-center">
-
-                <li class="nav-item me-lg-3">
-                    <span class="nav-link text-muted">
-                        {{ request.user.get_full_name }}
-                    </span>
-                </li>
-
-                <li class="nav-item">
-                    <a href="{% url 'usuarios:logout' %}" class="btn btn-outline-success btn-sm">
-                        Cerrar sesión
-                    </a>
-                </li>
-
-            </ul>
+            <a href="{% url 'usuarios:logout' %}" class="btn btn-outline-success btn-sm">
+                Cerrar sesión
+            </a>
 
         </div>
 

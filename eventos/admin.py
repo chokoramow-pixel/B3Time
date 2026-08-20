@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.db import models
 
+from core.widgets import AdminSplitDateTimeSinSegundos
 from eventos.models import Evento, Inscripcion, Asistencia
 from usuarios.models import Usuario
 
@@ -7,6 +9,9 @@ from usuarios.models import Usuario
 @admin.register(Evento)
 class EventoAdmin(admin.ModelAdmin):
     list_display = ("id", "titulo", "lugar", "fecha_inicio", "fecha_fin", "horas_otorgadas", "estado")
+    formfield_overrides = {
+        models.DateTimeField: {"widget": AdminSplitDateTimeSinSegundos},
+    }
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # Un evento lo crea Bienestar o un administrador, nunca un aprendiz.

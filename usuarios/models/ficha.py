@@ -1,5 +1,10 @@
 from django.db import models
 
+ESTADO_CHOICES = [
+    ("activa", "Activa"),
+    ("cerrada", "Cerrada"),
+]
+
 
 class Ficha(models.Model):
 
@@ -36,6 +41,7 @@ class Ficha(models.Model):
 
     estado = models.CharField(
         max_length=20,
+        choices=ESTADO_CHOICES,
         default="activa"
     )
 

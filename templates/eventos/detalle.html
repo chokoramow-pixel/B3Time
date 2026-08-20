@@ -43,9 +43,26 @@
                 </p>
 
                 {% if user.is_authenticated %}
-                    <button class="btn btn-success btn-lg" disabled>
-                        Inscripción próximamente
-                    </button>
+                    {% if not user.aprendiz %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            Solo los aprendices pueden inscribirse
+                        </button>
+                    {% elif ya_inscrito %}
+                        <button class="btn btn-outline-success btn-lg" disabled>
+                            <i class="bi bi-check-circle"></i> Ya estás inscrito
+                        </button>
+                    {% elif evento.estado != "programado" %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            Inscripciones cerradas
+                        </button>
+                    {% else %}
+                        <form method="post" action="{% url 'eventos:inscribirse' evento.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-lg">
+                                Inscribirme
+                            </button>
+                        </form>
+                    {% endif %}
                 {% else %}
                     <a href="{% url 'usuarios:login' %}" class="btn btn-success btn-lg">
                         Inicia sesión para inscribirte

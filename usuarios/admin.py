@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from usuarios.models import (
-    Rol,
     ProgramaFormacion,
     Jornada,
     Ficha,
@@ -14,14 +13,9 @@ from usuarios.models import (
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
-    list_display = ("id", "nombres", "apellidos", "tipo_documento", "numero_documento", "rol", "is_active", "is_staff")
-    list_filter = ("rol", "is_active", "is_staff")
+    list_display = ("id", "nombres", "apellidos", "tipo_documento", "numero_documento", "is_active", "is_staff")
+    list_filter = ("is_active", "is_staff")
     search_fields = ("numero_documento", "nombres", "apellidos", "email")
-
-
-@admin.register(Rol)
-class RolAdmin(admin.ModelAdmin):
-    list_display = ("id", "nombre")
 
 
 @admin.register(ProgramaFormacion)

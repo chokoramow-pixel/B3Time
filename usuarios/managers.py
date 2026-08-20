@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
+from django.utils import timezone
 
 
 class UsuarioManager(BaseUserManager):
@@ -25,8 +26,27 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
-        return self.create_user(
+        usuario = self.create_user(
             numero_documento,
             password,
             **extra_fields
         )
+
+        # Un superusuario también debe poder usar el panel de la app
+        # (no solo /admin/). Sin esto, createsuperuser deja la cuenta
+        # sin ningún perfil (Administrador/PersonalBienestar/Aprendiz),
+        # y dashboard_redirect lo rebota de vuelta al login porque no
+        # encuentra a qué panel mandarlo.
+        #
+        # El import va aquí adentro (no arriba del archivo) para evitar
+        # una importación circular: usuario.py importa este manager,
+        # así que este manager no puede importar de usuarios.models al
+        # nivel del módulo.
+        from usuarios.models import Administrador
+
+        Administrador.objects.get_or_create(
+            usuario=usuario,
+            defaults={"fecha_ingreso": timezone.now().date()},
+        )
+
+        return usuario

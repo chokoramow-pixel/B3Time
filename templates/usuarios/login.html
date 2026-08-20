@@ -19,7 +19,11 @@ Iniciar sesión | Be Time
                     </h1>
 
                     <p class="text-muted text-center mb-4">
-                        Accede con tu documento de identidad
+                        {% if es_acceso_personal %}
+                            Acceso para Personal de Bienestar y Administración
+                        {% else %}
+                            Accede con tu documento de identidad
+                        {% endif %}
                     </p>
 
                     <form method="post" novalidate>
@@ -69,14 +73,16 @@ Iniciar sesión | Be Time
 
                     </form>
 
-                    <p class="text-center mt-3 mb-0">
-                        <a href="{% url 'usuarios:password_reset' %}">¿Olvidaste tu contraseña?</a>
-                    </p>
+                    {% if not es_acceso_personal %}
+                        <p class="text-center mt-3 mb-0">
+                            <a href="{% url 'usuarios:password_reset' %}">¿Olvidaste tu contraseña?</a>
+                        </p>
 
-                    <p class="text-center text-muted mt-2 mb-0">
-                        ¿Eres nuevo?
-                        <a href="{% url 'usuarios:registro' %}">Crea tu cuenta de aprendiz</a>
-                    </p>
+                        <p class="text-center text-muted mt-2 mb-0">
+                            ¿Eres nuevo?
+                            <a href="{% url 'usuarios:registro' %}">Crea tu cuenta de aprendiz</a>
+                        </p>
+                    {% endif %}
 
                 </div>
             </div>

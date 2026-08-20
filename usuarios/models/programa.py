@@ -1,5 +1,10 @@
 from django.db import models
 
+ESTADO_CHOICES = [
+    ("activo", "Activo"),
+    ("inactivo", "Inactivo"),
+]
+
 
 class ProgramaFormacion(models.Model):
 
@@ -26,6 +31,7 @@ class ProgramaFormacion(models.Model):
 
     estado = models.CharField(
         max_length=20,
+        choices=ESTADO_CHOICES,
         default="activo"
     )
 

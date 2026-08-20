@@ -1,12 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import F
+from django.db.models import F, Q, Sum
+from django.db.models.deletion import ProtectedError
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from django_filters.views import FilterView
+from django_tables2.views import SingleTableMixin
 
+from bienestar.models import HorasBienestar
+from eventos.models import Inscripcion
 from usuarios.forms import (
     LoginForm,
     RegistroAprendizForm,
@@ -16,10 +21,12 @@ from usuarios.forms import (
     AprendizEstadoForm,
 )
 from usuarios.decorators import administrador_requerido, personal_bienestar_requerido
+from usuarios.filters import AprendizFilter
 from usuarios.mixins import AdministradorRequeridoMixin, PersonalBienestarRequeridoMixin
 from usuarios.models import Aprendiz, Ficha, Jornada, ProgramaFormacion
 from usuarios.services import registrar_aprendiz
-from core.services.exportar import exportar_excel, exportar_word, exportar_pdf
+from usuarios.tables import AprendizTable
+from core.services.exportar import responder_export
 
 
 def fichas_por_programa(request):
@@ -94,7 +101,16 @@ def login_view(request):
 
         messages.error(request, "Documento o contraseña incorrectos.")
 
-    return render(request, "usuarios/login.html", {"form": form})
+    # "acceso-personal/" es la misma vista y el mismo formulario que
+    # "login/" -- lo único que cambia es que ahí no tiene sentido
+    # mostrar los enlaces de "olvidé mi contraseña" / "crea tu cuenta
+    # de aprendiz", pensados para aprendices, no para Bienestar/Admin.
+    es_acceso_personal = request.resolver_match.url_name == "login_personal"
+
+    return render(request, "usuarios/login.html", {
+        "form": form,
+        "es_acceso_personal": es_acceso_personal,
+    })
 
 
 def logout_view(request):
@@ -131,8 +147,25 @@ def dashboard_aprendiz(request):
     if not hasattr(request.user, "aprendiz"):
         return redirect("usuarios:dashboard")
 
+    aprendiz = request.user.aprendiz
+
+    horas = HorasBienestar.objects.filter(
+        asistencia__inscripcion__aprendiz=aprendiz
+    ).select_related(
+        "asistencia__inscripcion__evento"
+    ).order_by("-fecha")
+
+    total_horas = horas.aggregate(total=Sum("cantidad_horas"))["total"] or 0
+
+    inscripciones = Inscripcion.objects.filter(
+        aprendiz=aprendiz
+    ).select_related("evento").order_by("-fecha_inscripcion")
+
     return render(request, "dashboard/aprendiz.html", {
-        "aprendiz": request.user.aprendiz,
+        "aprendiz": aprendiz,
+        "horas": horas,
+        "total_horas": total_horas,
+        "inscripciones": inscripciones,
     })
 
 
@@ -170,6 +203,7 @@ class ProgramaFormacionListView(AdministradorRequeridoMixin, ListView):
     template_name = "usuarios/programas_list.html"
     context_object_name = "programas"
     ordering = ["nombre"]
+    paginate_by = 15
 
 
 class ProgramaFormacionCreateView(AdministradorRequeridoMixin, CreateView):
@@ -223,6 +257,7 @@ class JornadaListView(AdministradorRequeridoMixin, ListView):
     template_name = "usuarios/jornadas_list.html"
     context_object_name = "jornadas"
     ordering = ["nombre"]
+    paginate_by = 15
 
 
 class JornadaCreateView(AdministradorRequeridoMixin, CreateView):
@@ -270,16 +305,47 @@ class JornadaDeleteView(AdministradorRequeridoMixin, DeleteView):
 
 
 # ---------- Fichas (Personal de Bienestar o Administrador) ----------
+# La misma vista sirve para "todas las fichas" (panel/fichas/), para
+# "las fichas de un programa" (panel/programas/<id>/fichas/) y para
+# "las fichas de una jornada" (panel/jornadas/<id>/fichas/) — ver
+# usuarios/urls.py. Si llega programa_id o jornada_id en la URL, se
+# filtra y se agrega al contexto para la miga de pan y la exportación.
 
 class FichaListView(PersonalBienestarRequeridoMixin, ListView):
     model = Ficha
     template_name = "usuarios/fichas_list.html"
     context_object_name = "fichas"
+    paginate_by = 15
 
     def get_queryset(self):
-        return Ficha.objects.select_related(
+        queryset = Ficha.objects.select_related(
             "programa_formacion", "jornada"
         ).order_by("-fecha_creacion")
+
+        programa_id = self.kwargs.get("programa_id")
+        if programa_id:
+            queryset = queryset.filter(programa_formacion_id=programa_id)
+
+        jornada_id = self.kwargs.get("jornada_id")
+        if jornada_id:
+            queryset = queryset.filter(jornada_id=jornada_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        programa_id = self.kwargs.get("programa_id")
+        if programa_id:
+            context["programa"] = get_object_or_404(ProgramaFormacion, pk=programa_id)
+            context["export_extra_params"] = f"programa_id={programa_id}"
+
+        jornada_id = self.kwargs.get("jornada_id")
+        if jornada_id:
+            context["jornada"] = get_object_or_404(Jornada, pk=jornada_id)
+            context["export_extra_params"] = f"jornada_id={jornada_id}"
+
+        return context
 
 
 class FichaCreateView(PersonalBienestarRequeridoMixin, CreateView):
@@ -330,16 +396,69 @@ class FichaDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
 # Se crean por auto-registro; aquí solo se consultan y se reasigna
 # su ficha/estado (activo, retirado, egresado). No se crean ni se
 # eliminan desde este panel.
+#
+# Igual que FichaListView: la misma vista sirve para "todos los
+# aprendices" (panel/aprendices/) y para "los aprendices de una
+# ficha" (panel/fichas/<id>/aprendices/).
 
-class AprendizListView(PersonalBienestarRequeridoMixin, ListView):
+class AprendizListView(PersonalBienestarRequeridoMixin, SingleTableMixin, FilterView):
+    """
+    Piloto de django-tables2 + django-filter, en reemplazo del buscador
+    y el orden-por-clic que antes hacíamos a mano en JS (tabla-filtro.js
+    sigue existiendo y sigue activo en las otras 5 listas del panel,
+    todavía no migradas).
+
+    La ganancia real: ordenar y buscar ahora pasan por la base de
+    datos, así que sí funcionan correctamente combinados con
+    paginación (antes, buscar en la página 1 no encontraba algo que
+    estuviera en la página 2).
+    """
+
     model = Aprendiz
+    table_class = AprendizTable
+    filterset_class = AprendizFilter
     template_name = "usuarios/aprendices_list.html"
-    context_object_name = "aprendices"
+    table_pagination = {"per_page": 15}
 
     def get_queryset(self):
-        return Aprendiz.objects.select_related(
+        queryset = super().get_queryset().select_related(
             "usuario", "ficha", "ficha__programa_formacion"
-        ).order_by("usuario__apellidos", "usuario__nombres")
+        )
+
+        ficha_id = self.kwargs.get("ficha_id")
+        if ficha_id:
+            queryset = queryset.filter(ficha_id=ficha_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        ficha_id = self.kwargs.get("ficha_id")
+        if ficha_id:
+            context["ficha"] = get_object_or_404(
+                Ficha.objects.select_related("programa_formacion"), pk=ficha_id
+            )
+
+        # Para que "Exportar" traiga lo mismo que se ve filtrado en
+        # pantalla: como la búsqueda ahora es un <form method="get">
+        # de verdad, la URL actual ya tiene ?q=...&estado=... — solo
+        # hay que copiarlo (menos "page") al link de exportar. Además
+        # de eso, si venimos filtrados por ficha (que es parte de la
+        # URL, no un ?parametro=), lo agregamos aparte.
+        parametros = self.request.GET.copy()
+        parametros.pop("page", None)
+
+        partes_extra = []
+        if parametros:
+            partes_extra.append(parametros.urlencode())
+        if ficha_id:
+            partes_extra.append(f"ficha_id={ficha_id}")
+
+        if partes_extra:
+            context["export_extra_params"] = "&".join(partes_extra)
+
+        return context
 
 
 class AprendizUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
@@ -357,25 +476,56 @@ class AprendizUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
         return super().form_valid(form)
 
 
+class AprendizDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
+    """
+    Elimina el Usuario completo (no solo la fila de Aprendiz) — si
+    borráramos solo el perfil de Aprendiz, quedaría una cuenta de
+    Usuario sin ningún perfil, y esa cuenta rota no podría volver a
+    iniciar sesión (el mismo problema que arreglamos con los
+    superusuarios sin Administrador).
+
+    Si el aprendiz ya tiene horas de bienestar registradas, Django
+    bloquea el borrado (HorasBienestar protege su Asistencia con
+    on_delete=PROTECT, a propósito, para no perder ese historial) — en
+    ese caso se avisa y se recomienda cambiar el estado a "Retirado" o
+    "Egresado" en vez de eliminar.
+    """
+    model = Aprendiz
+    success_url = reverse_lazy("usuarios:aprendices_lista")
+
+    def form_valid(self, form):
+        usuario = self.object.usuario
+
+        try:
+            usuario.delete()
+        except ProtectedError:
+            messages.error(
+                self.request,
+                "No se puede eliminar: ya tiene horas de bienestar registradas "
+                "(se protegen para no perder el historial). Puedes cambiar su "
+                "estado a \"Retirado\" o \"Egresado\" en vez de eliminarlo."
+            )
+        else:
+            messages.success(self.request, "Aprendiz eliminado.")
+
+        return redirect(self.success_url)
+
+
 # ---------- Exportar catálogos (Excel / Word / PDF) ----------
-
-def _responder_export(request, nombre_archivo, titulo, encabezados, filas):
-    formato = request.GET.get("formato")
-
-    if formato == "excel":
-        return exportar_excel(nombre_archivo, titulo, encabezados, filas)
-    if formato == "word":
-        return exportar_word(nombre_archivo, titulo, encabezados, filas)
-    if formato == "pdf":
-        return exportar_pdf(nombre_archivo, titulo, encabezados, filas)
-
-    messages.error(request, "Formato de exportación no válido.")
-    return redirect("usuarios:dashboard")
-
+# El helper que decide el formato vive en core/services/exportar.py
+# (responder_export), compartido con eventos y publicaciones.
 
 @administrador_requerido
 def exportar_programas(request):
     programas = ProgramaFormacion.objects.order_by("nombre")
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        programas = programas.filter(Q(nombre__icontains=q) | Q(codigo__icontains=q))
+
+    estado = request.GET.get("estado", "").strip()
+    if estado:
+        programas = programas.filter(estado=estado)
 
     encabezados = ["Nombre", "Código", "Nivel", "Duración (meses)", "Estado"]
     filas = [
@@ -383,22 +533,46 @@ def exportar_programas(request):
         for p in programas
     ]
 
-    return _responder_export(request, "programas_formacion", "Programas de formación", encabezados, filas)
+    return responder_export(request, "programas_formacion", "Programas de formación", encabezados, filas, "usuarios:dashboard")
 
 
 @administrador_requerido
 def exportar_jornadas(request):
     jornadas = Jornada.objects.order_by("nombre")
 
+    q = request.GET.get("q", "").strip()
+    if q:
+        jornadas = jornadas.filter(nombre__icontains=q)
+
     encabezados = ["Nombre"]
     filas = [[j.nombre] for j in jornadas]
 
-    return _responder_export(request, "jornadas", "Jornadas", encabezados, filas)
+    return responder_export(request, "jornadas", "Jornadas", encabezados, filas, "usuarios:dashboard")
 
 
 @personal_bienestar_requerido
 def exportar_fichas(request):
     fichas = Ficha.objects.select_related("programa_formacion", "jornada").order_by("-fecha_creacion")
+
+    programa_id = request.GET.get("programa_id")
+    if programa_id:
+        fichas = fichas.filter(programa_formacion_id=programa_id)
+
+    jornada_id = request.GET.get("jornada_id")
+    if jornada_id:
+        fichas = fichas.filter(jornada_id=jornada_id)
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        fichas = fichas.filter(
+            Q(numero_ficha__icontains=q) |
+            Q(programa_formacion__nombre__icontains=q) |
+            Q(jornada__nombre__icontains=q)
+        )
+
+    estado = request.GET.get("estado", "").strip()
+    if estado:
+        fichas = fichas.filter(estado=estado)
 
     encabezados = ["Número de ficha", "Programa", "Jornada", "Fecha inicio", "Fecha fin", "Estado"]
     filas = [
@@ -406,14 +580,22 @@ def exportar_fichas(request):
         for f in fichas
     ]
 
-    return _responder_export(request, "fichas", "Fichas", encabezados, filas)
+    return responder_export(request, "fichas", "Fichas", encabezados, filas, "usuarios:dashboard")
 
 
 @personal_bienestar_requerido
 def exportar_aprendices(request):
-    aprendices = Aprendiz.objects.select_related(
+    queryset = Aprendiz.objects.select_related(
         "usuario", "ficha", "ficha__programa_formacion"
     ).order_by("usuario__apellidos", "usuario__nombres")
+
+    ficha_id = request.GET.get("ficha_id")
+    if ficha_id:
+        queryset = queryset.filter(ficha_id=ficha_id)
+
+    # Mismo filtro que usa la tabla en pantalla (usuarios/filters.py) --
+    # así "Exportar" nunca se puede desalinear de lo que se ve filtrado.
+    aprendices = AprendizFilter(request.GET, queryset=queryset).qs
 
     encabezados = ["Nombres", "Apellidos", "Documento", "Ficha", "Programa", "Estado"]
     filas = [
@@ -428,4 +610,4 @@ def exportar_aprendices(request):
         for a in aprendices
     ]
 
-    return _responder_export(request, "aprendices", "Aprendices", encabezados, filas)
+    return responder_export(request, "aprendices", "Aprendices", encabezados, filas, "usuarios:dashboard")

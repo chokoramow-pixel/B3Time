@@ -1,5 +1,12 @@
 from django.db import models
 
+ESTADO_CHOICES = [
+    ("programado", "Programado"),
+    ("en_curso", "En curso"),
+    ("finalizado", "Finalizado"),
+    ("cancelado", "Cancelado"),
+]
+
 
 class Evento(models.Model):
 
@@ -55,6 +62,7 @@ class Evento(models.Model):
 
     estado = models.CharField(
         max_length=20,
+        choices=ESTADO_CHOICES,
         default="programado"
     )
 

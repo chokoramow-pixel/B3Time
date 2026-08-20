@@ -1,5 +1,10 @@
 from django.db import models
 
+ESTADO_CHOICES = [
+    ("borrador", "Borrador"),
+    ("publicado", "Publicado"),
+]
+
 
 class Publicacion(models.Model):
 
@@ -31,6 +36,7 @@ class Publicacion(models.Model):
 
     estado = models.CharField(
         max_length=20,
+        choices=ESTADO_CHOICES,
         default="borrador"
     )
 

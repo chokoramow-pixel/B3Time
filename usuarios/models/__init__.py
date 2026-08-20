@@ -1,4 +1,3 @@
-from .rol import Rol
 from .programa import ProgramaFormacion
 from .jornada import Jornada
 from .ficha import Ficha
@@ -8,7 +7,6 @@ from .personal_bienestar import PersonalBienestar
 from .administrador import Administrador
 
 __all__ = [
-    "Rol",
     "ProgramaFormacion",
     "Jornada",
     "Ficha",

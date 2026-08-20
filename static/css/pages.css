@@ -126,6 +126,57 @@
 .home-hero__chip--deportes  { bottom: 6%; left: -4%; }
 .home-hero__chip--cultura   { bottom: 2%; right: 4%; }
 
+/* ---------- Órbita: los 4 chips giran alrededor del centro,
+   cada uno con un contra-giro para que su texto se mantenga
+   siempre derecho y legible (como las etiquetas de un sistema
+   solar, no como una rueda de la fortuna). ---------- */
+
+.home-hero__orbita {
+    position: absolute;
+    inset: 0;
+    animation: bt-orbita-girar 22s linear infinite;
+}
+
+.home-hero__chip {
+    animation: bt-orbita-contragirar 22s linear infinite;
+}
+
+@keyframes bt-orbita-girar {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes bt-orbita-contragirar {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(-360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-hero__orbita,
+    .home-hero__chip {
+        animation: none;
+    }
+}
+
+/* En celulares angostos, algunos chips (los que tienen posición
+   negativa, pensada para verse bien en pantallas grandes) se salían
+   del círculo y hasta de la pantalla. Se encogen y se acomodan hacia
+   adentro solo por debajo de 576px. */
+@media (max-width: 575.98px) {
+    .home-hero__art {
+        max-width: 280px;
+    }
+
+    .home-hero__chip {
+        font-size: 0.68rem;
+        padding: 0.3rem 0.55rem;
+        gap: 0.3rem;
+    }
+
+    .home-hero__chip--asesorias { right: 1%; }
+    .home-hero__chip--deportes  { left: 1%; }
+}
+
 /* ---------- Secciones generales ---------- */
 
 .home-section {

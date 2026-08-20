@@ -21,7 +21,30 @@ Uso típico dentro de una vista:
 
 from io import BytesIO
 
+from django.contrib import messages
 from django.http import HttpResponse
+from django.shortcuts import redirect
+
+
+def responder_export(request, nombre_archivo, titulo, encabezados, filas, url_error):
+    """
+    Decide en qué formato responder (excel/word/pdf) según el parámetro
+    ?formato= de la URL. Centraliza lo que antes cada app repetía a mano.
+
+    url_error: nombre de la url (con namespace, ej. "eventos:panel_lista")
+    a la que volver si el formato pedido no es válido.
+    """
+    formato = request.GET.get("formato")
+
+    if formato == "excel":
+        return exportar_excel(nombre_archivo, titulo, encabezados, filas)
+    if formato == "word":
+        return exportar_word(nombre_archivo, titulo, encabezados, filas)
+    if formato == "pdf":
+        return exportar_pdf(nombre_archivo, titulo, encabezados, filas)
+
+    messages.error(request, "Formato de exportación no válido.")
+    return redirect(url_error)
 
 
 def _valor_a_texto(valor):

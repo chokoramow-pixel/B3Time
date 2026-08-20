@@ -1,11 +1,15 @@
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse_lazy
 from django.utils import timezone
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from core.services.exportar import exportar_excel, exportar_word, exportar_pdf
+from core.services.exportar import responder_export
 from publicaciones.forms import PublicacionForm
 from publicaciones.models import Publicacion
 from usuarios.decorators import personal_bienestar_requerido
+from usuarios.mixins import PersonalBienestarRequeridoMixin
 
 
 def lista_publicaciones(request):
@@ -33,81 +37,74 @@ def detalle_publicacion(request, publicacion_id):
 
 
 # ---------- Panel de gestión (Personal de Bienestar / Administrador) ----------
+# CRUD como Class-Based Views, igual que ProgramaFormacion/Jornada/Ficha en usuarios.
 
-@personal_bienestar_requerido
-def panel_publicaciones(request):
-
-    publicaciones = Publicacion.objects.order_by("-fecha_creacion")
-
-    return render(request, "publicaciones/panel_lista.html", {
-        "publicaciones": publicaciones,
-    })
-
-
-@personal_bienestar_requerido
-def crear_publicacion(request):
-
-    form = PublicacionForm(request.POST or None, request.FILES or None)
-
-    if request.method == "POST" and form.is_valid():
-        publicacion = form.save(commit=False)
-        publicacion.autor = request.user
-
-        if publicacion.estado == "publicado" and not publicacion.fecha_publicacion:
-            publicacion.fecha_publicacion = timezone.now()
-
-        publicacion.save()
-
-        messages.success(request, "Publicación creada correctamente.")
-        return redirect("publicaciones:panel_lista")
-
-    return render(request, "publicaciones/form.html", {
-        "form": form,
-        "titulo_pagina": "Crear publicación",
-    })
+class PublicacionListView(PersonalBienestarRequeridoMixin, ListView):
+    model = Publicacion
+    template_name = "publicaciones/panel_lista.html"
+    context_object_name = "publicaciones"
+    ordering = ["-fecha_creacion"]
+    paginate_by = 15
 
 
-@personal_bienestar_requerido
-def editar_publicacion(request, publicacion_id):
+class PublicacionCreateView(PersonalBienestarRequeridoMixin, CreateView):
+    model = Publicacion
+    form_class = PublicacionForm
+    template_name = "publicaciones/form.html"
+    success_url = reverse_lazy("publicaciones:panel_lista")
+    extra_context = {"titulo_pagina": "Crear publicación"}
 
-    publicacion = get_object_or_404(Publicacion, id=publicacion_id)
-    form = PublicacionForm(request.POST or None, request.FILES or None, instance=publicacion)
+    def form_valid(self, form):
+        form.instance.autor = self.request.user
 
-    if request.method == "POST" and form.is_valid():
-        publicacion = form.save(commit=False)
+        if form.instance.estado == "publicado" and not form.instance.fecha_publicacion:
+            form.instance.fecha_publicacion = timezone.now()
 
-        if publicacion.estado == "publicado" and not publicacion.fecha_publicacion:
-            publicacion.fecha_publicacion = timezone.now()
-
-        publicacion.save()
-
-        messages.success(request, "Publicación actualizada correctamente.")
-        return redirect("publicaciones:panel_lista")
-
-    return render(request, "publicaciones/form.html", {
-        "form": form,
-        "titulo_pagina": "Editar publicación",
-    })
+        messages.success(self.request, "Publicación creada correctamente.")
+        return super().form_valid(form)
 
 
-@personal_bienestar_requerido
-def eliminar_publicacion(request, publicacion_id):
+class PublicacionUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
+    model = Publicacion
+    form_class = PublicacionForm
+    template_name = "publicaciones/form.html"
+    success_url = reverse_lazy("publicaciones:panel_lista")
+    extra_context = {"titulo_pagina": "Editar publicación"}
 
-    publicacion = get_object_or_404(Publicacion, id=publicacion_id)
+    def form_valid(self, form):
+        if form.instance.estado == "publicado" and not form.instance.fecha_publicacion:
+            form.instance.fecha_publicacion = timezone.now()
 
-    if request.method == "POST":
-        publicacion.delete()
-        messages.success(request, "Publicación eliminada.")
-        return redirect("publicaciones:panel_lista")
+        messages.success(self.request, "Publicación actualizada correctamente.")
+        return super().form_valid(form)
 
-    return render(request, "publicaciones/confirmar_eliminar.html", {
-        "publicacion": publicacion,
-    })
+
+class PublicacionDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
+    model = Publicacion
+    template_name = "publicaciones/confirmar_eliminar.html"
+    context_object_name = "publicacion"
+    success_url = reverse_lazy("publicaciones:panel_lista")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Publicación eliminada.")
+        return super().form_valid(form)
 
 
 @personal_bienestar_requerido
 def exportar_publicaciones(request):
     publicaciones = Publicacion.objects.order_by("-fecha_creacion")
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        publicaciones = publicaciones.filter(
+            Q(titulo__icontains=q) |
+            Q(autor__nombres__icontains=q) |
+            Q(autor__apellidos__icontains=q)
+        )
+
+    estado = request.GET.get("estado", "").strip()
+    if estado:
+        publicaciones = publicaciones.filter(estado=estado)
 
     encabezados = ["Título", "Autor", "Estado", "Fecha publicación"]
     filas = [
@@ -115,13 +112,4 @@ def exportar_publicaciones(request):
         for p in publicaciones
     ]
 
-    formato = request.GET.get("formato")
-    if formato == "excel":
-        return exportar_excel("publicaciones", "Publicaciones", encabezados, filas)
-    if formato == "word":
-        return exportar_word("publicaciones", "Publicaciones", encabezados, filas)
-    if formato == "pdf":
-        return exportar_pdf("publicaciones", "Publicaciones", encabezados, filas)
-
-    messages.error(request, "Formato de exportación no válido.")
-    return redirect("publicaciones:panel_lista")
+    return responder_export(request, "publicaciones", "Publicaciones", encabezados, filas, "publicaciones:panel_lista")

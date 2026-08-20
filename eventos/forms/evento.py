@@ -1,5 +1,6 @@
 from django import forms
 
+from core.widgets import FlatpickrDateTimeInput
 from eventos.models import Evento
 
 
@@ -23,13 +24,9 @@ class EventoForm(forms.ModelForm):
             "lugar": forms.TextInput(attrs={"class": "form-control"}),
             "horas_otorgadas": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
             "imagen": forms.ClearableFileInput(attrs={"class": "form-control"}),
-            "fecha_inicio": forms.DateTimeInput(attrs={"class": "form-control", "type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-            "fecha_fin": forms.DateTimeInput(attrs={"class": "form-control", "type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-            "estado": forms.Select(attrs={"class": "form-select"}, choices=[
-                ("programado", "Programado"),
-                ("cancelado", "Cancelado"),
-                ("finalizado", "Finalizado"),
-            ]),
+            "fecha_inicio": FlatpickrDateTimeInput(),
+            "fecha_fin": FlatpickrDateTimeInput(),
+            "estado": forms.Select(attrs={"class": "form-select"}),
         }
 
     def clean(self):

@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_tables2',
+    'django_filters',
     # Registro carpeta core
     'core',
     'usuarios',
@@ -132,6 +134,11 @@ STATICFILES_DIRS = [
 ]
 
 
+# django-tables2: usa el estilo Bootstrap 5 en todas las tablas por
+# defecto, para no tener que repetirlo en cada Table.Meta.
+DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
+
+
 # Archivos subidos por los usuarios (imágenes de publicaciones, etc.)
 # https://docs.djangoproject.com/en/6.0/topics/files/
 
@@ -170,6 +177,6 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "betimesena@gmail.com"
-EMAIL_HOST_PASSWORD = "axtdnrqnnecodqxh"
+EMAIL_HOST_USER = "betimesena2026@gmail.com"
+EMAIL_HOST_PASSWORD = "nalh ryykzpbziviq"
 DEFAULT_FROM_EMAIL = "Be Time <betimesena@gmail.com>"

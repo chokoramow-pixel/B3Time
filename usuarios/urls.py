@@ -10,6 +10,7 @@ urlpatterns = [
     path("registro/", views.registro_aprendiz, name="registro"),
     path("ajax/fichas/", views.fichas_por_programa, name="fichas_por_programa"),
     path("login/", views.login_view, name="login"),
+    path("acceso-personal/", views.login_view, name="login_personal"),
     path("logout/", views.logout_view, name="logout"),
 
     path("dashboard/", views.dashboard_redirect, name="dashboard"),
@@ -24,6 +25,7 @@ urlpatterns = [
     path("panel/programas/crear/", views.ProgramaFormacionCreateView.as_view(), name="programas_crear"),
     path("panel/programas/<int:pk>/editar/", views.ProgramaFormacionUpdateView.as_view(), name="programas_editar"),
     path("panel/programas/<int:pk>/eliminar/", views.ProgramaFormacionDeleteView.as_view(), name="programas_eliminar"),
+    path("panel/programas/<int:programa_id>/fichas/", views.FichaListView.as_view(), name="fichas_de_programa"),
 
     # ---------- Panel: Jornadas (Administrador) ----------
 
@@ -32,6 +34,7 @@ urlpatterns = [
     path("panel/jornadas/crear/", views.JornadaCreateView.as_view(), name="jornadas_crear"),
     path("panel/jornadas/<int:pk>/editar/", views.JornadaUpdateView.as_view(), name="jornadas_editar"),
     path("panel/jornadas/<int:pk>/eliminar/", views.JornadaDeleteView.as_view(), name="jornadas_eliminar"),
+    path("panel/jornadas/<int:jornada_id>/fichas/", views.FichaListView.as_view(), name="fichas_de_jornada"),
 
     # ---------- Panel: Fichas (Bienestar / Administrador) ----------
 
@@ -40,6 +43,7 @@ urlpatterns = [
     path("panel/fichas/crear/", views.FichaCreateView.as_view(), name="fichas_crear"),
     path("panel/fichas/<int:pk>/editar/", views.FichaUpdateView.as_view(), name="fichas_editar"),
     path("panel/fichas/<int:pk>/eliminar/", views.FichaDeleteView.as_view(), name="fichas_eliminar"),
+    path("panel/fichas/<int:ficha_id>/aprendices/", views.AprendizListView.as_view(), name="aprendices_de_ficha"),
 
     # ---------- Panel: Aprendices (Bienestar / Administrador) ----------
     # Se crean por auto-registro; aquí solo se editan (ficha/estado).
@@ -47,6 +51,7 @@ urlpatterns = [
     path("panel/aprendices/", views.AprendizListView.as_view(), name="aprendices_lista"),
     path("panel/aprendices/exportar/", views.exportar_aprendices, name="aprendices_exportar"),
     path("panel/aprendices/<int:pk>/editar/", views.AprendizUpdateView.as_view(), name="aprendices_editar"),
+    path("panel/aprendices/<int:pk>/eliminar/", views.AprendizDeleteView.as_view(), name="aprendices_eliminar"),
 
     # ---------- Restablecer contraseña ----------
 

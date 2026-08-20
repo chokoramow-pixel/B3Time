@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 
-from usuarios.models import Aprendiz, Rol, Usuario
+from usuarios.models import Aprendiz, Usuario
 
 
 @transaction.atomic
@@ -11,11 +11,6 @@ def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, 
     Si algo falla, no queda ningún registro a medias.
     """
 
-    rol_aprendiz, _ = Rol.objects.get_or_create(
-        nombre="aprendiz",
-        defaults={"descripcion": "Aprendiz en formación"}
-    )
-
     usuario = Usuario.objects.create_user(
         numero_documento=numero_documento,
         password=password,
@@ -23,7 +18,6 @@ def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, 
         nombres=nombres,
         apellidos=apellidos,
         email=email,
-        rol=rol_aprendiz,
     )
 
     aprendiz = Aprendiz.objects.create(

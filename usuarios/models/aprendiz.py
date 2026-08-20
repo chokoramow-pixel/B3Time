@@ -1,5 +1,11 @@
 from django.db import models
 
+ESTADO_CHOICES = [
+    ("activo", "Activo"),
+    ("retirado", "Retirado"),
+    ("egresado", "Egresado"),
+]
+
 
 class Aprendiz(models.Model):
 
@@ -27,6 +33,7 @@ class Aprendiz(models.Model):
 
     estado = models.CharField(
         max_length=20,
+        choices=ESTADO_CHOICES,
         default="activo"
     )
 

@@ -1,5 +1,12 @@
 from django.db import models
 
+ESTADO_CHOICES = [
+    ("solicitada", "Solicitada"),
+    ("confirmada", "Confirmada"),
+    ("realizada", "Realizada"),
+    ("cancelada", "Cancelada"),
+]
+
 
 class Asesoria(models.Model):
 
@@ -39,6 +46,7 @@ class Asesoria(models.Model):
 
     estado = models.CharField(
         max_length=20,
+        choices=ESTADO_CHOICES,
         default="solicitada"
     )
 

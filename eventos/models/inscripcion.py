@@ -1,5 +1,12 @@
 from django.db import models
 
+ESTADO_CHOICES = [
+    ("inscrito", "Inscrito"),
+    ("asistio", "Asistió"),
+    ("no_asistio", "No asistió"),
+    ("cancelada", "Cancelada"),
+]
+
 
 class Inscripcion(models.Model):
 
@@ -23,6 +30,7 @@ class Inscripcion(models.Model):
 
     estado = models.CharField(
         max_length=20,
+        choices=ESTADO_CHOICES,
         default="inscrito"
     )
 

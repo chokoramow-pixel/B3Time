@@ -1,4 +1,5 @@
 {% extends 'base_private.html' %}
+{% load django_tables2 %}
 
 {% block title %}
 Aprendices | Be Time
@@ -6,46 +7,40 @@ Aprendices | Be Time
 
 {% block dashboard_content %}
 
+{% if ficha %}
+    <nav class="mb-2">
+        <a href="{% url 'usuarios:fichas_lista' %}" class="text-decoration-none">&larr; Fichas</a>
+    </nav>
+    <p class="text-muted mb-3">
+        Aprendices de la ficha <strong>{{ ficha.numero_ficha }}</strong>
+        ({{ ficha.programa_formacion.nombre }})
+    </p>
+{% endif %}
+
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h1 class="h3 fw-bold mb-0">Aprendices</h1>
     {% include 'components/exportar/botones.html' with base_url='usuarios:aprendices_exportar' %}
 </div>
 
-{% if aprendices %}
-    <div class="table-responsive">
-        <table class="table align-middle bg-white">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Documento</th>
-                    <th>Ficha</th>
-                    <th>Programa</th>
-                    <th>Estado</th>
-                    <th class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for aprendiz in aprendices %}
-                    <tr>
-                        <td>{{ aprendiz.usuario.get_full_name }}</td>
-                        <td>{{ aprendiz.usuario.numero_documento }}</td>
-                        <td>{{ aprendiz.ficha.numero_ficha }}</td>
-                        <td>{{ aprendiz.ficha.programa_formacion.nombre }}</td>
-                        <td><span class="badge text-bg-light border">{{ aprendiz.estado }}</span></td>
-                        <td class="text-end">
-                            <a href="{% url 'usuarios:aprendices_editar' aprendiz.id %}" class="btn btn-sm btn-outline-success">Editar</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!-- Búsqueda y filtro de estado -- ahora son un formulario real que
+     recarga la página (a diferencia de las otras 5 listas, que
+     todavía filtran al instante con JS). Es lo que permite que
+     buscar/ordenar sí funcione bien cruzando páginas, y que
+     "Exportar" siempre traiga exactamente lo filtrado. -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-12 col-md-6">
+        {{ filter.form.q }}
     </div>
-{% else %}
-    <div class="card border-0 shadow-sm">
-        <div class="card-body text-center text-muted py-5">
-            Todavía no hay aprendices registrados.
-        </div>
+    <div class="col-12 col-md-4">
+        {{ filter.form.estado }}
     </div>
-{% endif %}
+    <div class="col-12 col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">Buscar</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    {% render_table table %}
+</div>
 
 {% endblock %}
