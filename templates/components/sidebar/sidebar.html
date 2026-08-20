@@ -27,6 +27,10 @@
     {% endif %}
 
     {% if request.user.administrador %}
+        <a href="{% url 'usuarios:crear_usuario' %}" class="list-group-item list-group-item-action">
+            <i class="bi bi-person-plus"></i> Crear usuario
+        </a>
+
         <a href="{% url 'usuarios:programas_lista' %}" class="list-group-item list-group-item-action">
             <i class="bi bi-mortarboard"></i> Programas de formación
         </a>

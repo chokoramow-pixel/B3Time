@@ -15,6 +15,7 @@ from eventos.models import Inscripcion
 from usuarios.forms import (
     LoginForm,
     RegistroAprendizForm,
+    CrearUsuarioAdminForm,
     ProgramaFormacionForm,
     JornadaForm,
     FichaForm,
@@ -24,7 +25,7 @@ from usuarios.decorators import administrador_requerido, personal_bienestar_requ
 from usuarios.filters import AprendizFilter
 from usuarios.mixins import AdministradorRequeridoMixin, PersonalBienestarRequeridoMixin
 from usuarios.models import Aprendiz, Ficha, Jornada, ProgramaFormacion
-from usuarios.services import registrar_aprendiz
+from usuarios.services import registrar_aprendiz, crear_usuario_administrativo
 from usuarios.tables import AprendizTable
 from core.services.exportar import responder_export
 
@@ -75,6 +76,42 @@ def registro_aprendiz(request):
         return redirect("usuarios:dashboard")
 
     return render(request, "usuarios/registro.html", {"form": form})
+
+
+@administrador_requerido
+def crear_usuario_admin(request):
+    """
+    Un Administrador crea, desde el panel, cualquier tipo de cuenta:
+    Aprendiz, Personal de Bienestar o incluso otro Administrador.
+    A diferencia de registro_aprendiz, aquí la persona que llena el
+    formulario NO es quien va a usar la cuenta -- por eso no hace
+    login() al final, solo confirma que se creó.
+    """
+
+    form = CrearUsuarioAdminForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+
+        usuario, perfil = crear_usuario_administrativo(
+            tipo_documento=form.cleaned_data["tipo_documento"],
+            numero_documento=form.cleaned_data["numero_documento"],
+            nombres=form.cleaned_data["nombres"],
+            apellidos=form.cleaned_data["apellidos"],
+            email=form.cleaned_data["email"],
+            password=form.cleaned_data["password"],
+            tipo_perfil=form.cleaned_data["tipo_perfil"],
+            ficha=form.cleaned_data.get("ficha"),
+            cargo=form.cleaned_data.get("cargo"),
+        )
+
+        messages.success(
+            request,
+            f"Cuenta creada correctamente para {usuario.get_full_name()} "
+            f"({dict(form.fields['tipo_perfil'].choices)[form.cleaned_data['tipo_perfil']]})."
+        )
+        return redirect("usuarios:crear_usuario")
+
+    return render(request, "usuarios/crear_usuario.html", {"form": form})
 
 
 def login_view(request):

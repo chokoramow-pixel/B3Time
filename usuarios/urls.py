@@ -17,6 +17,7 @@ urlpatterns = [
     path("dashboard/aprendiz/", views.dashboard_aprendiz, name="dashboard_aprendiz"),
     path("dashboard/bienestar/", views.dashboard_bienestar, name="dashboard_bienestar"),
     path("dashboard/admin/", views.dashboard_admin, name="dashboard_admin"),
+    path("panel/usuarios/crear/", views.crear_usuario_admin, name="crear_usuario"),
 
     # ---------- Panel: Programas de Formación (Administrador) ----------
 
