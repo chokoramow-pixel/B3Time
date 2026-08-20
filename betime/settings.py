@@ -178,5 +178,5 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "betimesena2026@gmail.com"
-EMAIL_HOST_PASSWORD = "nalh ryykzpbziviq"
+EMAIL_HOST_PASSWORD = "nalhryykzpbziviq"
 DEFAULT_FROM_EMAIL = "Be Time <betimesena@gmail.com>"
