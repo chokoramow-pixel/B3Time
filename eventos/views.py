@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -10,6 +11,7 @@ from bienestar.services import registrar_asistencia_y_horas
 from core.services.exportar import responder_export
 from eventos.forms import EventoForm
 from eventos.models import Evento, Inscripcion
+from eventos.services import generar_imagen_qr
 from usuarios.decorators import personal_bienestar_requerido
 from usuarios.mixins import PersonalBienestarRequeridoMixin
 
@@ -191,4 +193,109 @@ def checklist_inscritos(request, evento_id):
     return render(request, "eventos/checklist_inscritos.html", {
         "evento": evento,
         "inscripciones": inscripciones,
+    })
+
+
+# ---------- QR: mecanismo alterno al checklist manual ----------
+# El aprendiz ve su QR desde "Mi panel"; el funcionario lo escanea (con
+# la cámara del celular o con el escáner de la app) y confirma la
+# asistencia. Por debajo, llama exactamente al mismo servicio que usa
+# el checklist manual -- si uno de los dos mecanismos falla, el otro
+# sigue funcionando igual, porque no comparten ningún código frágil,
+# solo el mismo servicio ya probado.
+
+@login_required(login_url="usuarios:login")
+def mi_qr_inscripcion(request, inscripcion_id):
+    """
+    Pantalla que ve el APRENDIZ con su propio código QR para un
+    evento al que está inscrito.
+    """
+
+    inscripcion = get_object_or_404(Inscripcion, id=inscripcion_id)
+
+    if not hasattr(request.user, "aprendiz") or inscripcion.aprendiz != request.user.aprendiz:
+        messages.error(request, "No tienes permiso para ver este código.")
+        return redirect("usuarios:dashboard")
+
+    return render(request, "eventos/mi_qr.html", {
+        "inscripcion": inscripcion,
+    })
+
+
+@login_required(login_url="usuarios:login")
+def qr_imagen_inscripcion(request, inscripcion_id):
+    """
+    Devuelve la IMAGEN del QR (el <img src="..."> de la plantilla
+    anterior apunta aquí). Mismo control de permisos que la pantalla
+    que lo muestra -- nadie puede pedir el QR de otra persona solo
+    cambiando el número en la URL.
+    """
+
+    inscripcion = get_object_or_404(Inscripcion, id=inscripcion_id)
+
+    if not hasattr(request.user, "aprendiz") or inscripcion.aprendiz != request.user.aprendiz:
+        return HttpResponse(status=403)
+
+    url_confirmacion = request.build_absolute_uri(
+        reverse_lazy("eventos:confirmar_asistencia_qr", args=[inscripcion.token])
+    )
+
+    buffer = generar_imagen_qr(url_confirmacion)
+    return HttpResponse(buffer.read(), content_type="image/png")
+
+
+@personal_bienestar_requerido
+def escanear_qr(request):
+    """
+    Pantalla con la cámara para que Bienestar/Administrador escaneen
+    el QR de un aprendiz sin salir de Be Time. También sirve escanear
+    con la app de cámara normal del celular -- esta pantalla es solo
+    una comodidad extra, no la única forma de hacerlo.
+    """
+    return render(request, "eventos/escanear_qr.html")
+
+
+def confirmar_asistencia_qr(request, token):
+    """
+    A esta URL es a la que lleva el QR. Cualquiera puede ABRIRLA (por
+    eso no tiene decorador de permisos arriba), pero solo alguien
+    logueado como Personal de Bienestar puede de verdad CONFIRMAR --
+    así, aunque el aprendiz mismo llegara a escanear su propio QR por
+    curiosidad, no puede marcarse presente a sí mismo.
+    """
+
+    inscripcion = get_object_or_404(
+        Inscripcion.objects.select_related(
+            "aprendiz__usuario", "aprendiz__ficha", "evento"
+        ),
+        token=token,
+    )
+
+    if not request.user.is_authenticated:
+        messages.info(request, "Inicia sesión como Personal de Bienestar para confirmar la asistencia.")
+        return redirect("usuarios:login_personal")
+
+    if not hasattr(request.user, "personal_bienestar"):
+        messages.error(
+            request,
+            "Solo Personal de Bienestar puede confirmar asistencia por QR "
+            "(un Administrador puede ver esta pantalla, pero no confirmarla)."
+        )
+
+    if request.method == "POST" and hasattr(request.user, "personal_bienestar"):
+        registrar_asistencia_y_horas(
+            inscripcion=inscripcion,
+            asistio=True,
+            cantidad_horas=inscripcion.evento.horas_otorgadas,
+            motivo=f"Asistencia a: {inscripcion.evento.titulo} (QR)",
+            asignado_por=request.user.personal_bienestar,
+        )
+        messages.success(
+            request,
+            f"Asistencia confirmada para {inscripcion.aprendiz.usuario.get_full_name()}."
+        )
+        return redirect("eventos:confirmar_asistencia_qr", token=token)
+
+    return render(request, "eventos/confirmar_asistencia_qr.html", {
+        "inscripcion": inscripcion,
     })

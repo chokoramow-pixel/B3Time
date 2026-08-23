@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 ESTADO_CHOICES = [
@@ -24,6 +26,18 @@ class Inscripcion(models.Model):
         "usuarios.Aprendiz",
         on_delete=models.CASCADE,
         related_name="inscripciones"
+    )
+
+    # ---------- QR ----------
+    # Token único e imposible de adivinar -- es lo que se codifica en
+    # el QR de esta inscripción en particular. Un UUID en vez del "id"
+    # normal, porque el id es un número secuencial fácil de adivinar
+    # (1, 2, 3...) y cualquiera podría probar números al azar.
+
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
     )
 
     # ---------- Estados ----------
