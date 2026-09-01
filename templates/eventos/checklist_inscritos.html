@@ -12,9 +12,12 @@ Inscritos - {{ evento.titulo }} | Be Time
 
 <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
     <h1 class="h3 fw-bold mb-0">Inscritos: {{ evento.titulo }}</h1>
-    <a href="{% url 'eventos:escanear_qr' %}" class="btn btn-outline-success btn-sm">
-        <i class="bi bi-qr-code-scan"></i> Escanear QR
-    </a>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='eventos:panel_exportar_inscritos' %}
+        <a href="{% url 'eventos:escanear_qr' %}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-qr-code-scan"></i> Escanear QR
+        </a>
+    </div>
 </div>
 <p class="text-muted mb-3">
     Marca quién asistió y con cuántas horas. Se prellenan con las
@@ -66,6 +69,7 @@ Inscritos - {{ evento.titulo }} | Be Time
                 <thead>
                     <tr>
                         <th>Aprendiz</th>
+                        <th>Documento</th>
                         <th>Ficha</th>
                         <th class="text-center">Asistió</th>
                         <th style="width: 140px;">Horas</th>
@@ -79,12 +83,10 @@ Inscritos - {{ evento.titulo }} | Be Time
                                     <div class="avatar-iniciales">
                                         {{ inscripcion.aprendiz.usuario.nombres|first|upper }}{{ inscripcion.aprendiz.usuario.apellidos|first|upper }}
                                     </div>
-                                    <div>
-                                        <div class="fw-semibold">{{ inscripcion.aprendiz.usuario.get_full_name }}</div>
-                                        <div class="text-muted small">{{ inscripcion.aprendiz.usuario.numero_documento }}</div>
-                                    </div>
+                                    <div class="fw-semibold">{{ inscripcion.aprendiz.usuario.get_full_name }}</div>
                                 </div>
                             </td>
+                            <td>{{ inscripcion.aprendiz.usuario.tipo_documento }} {{ inscripcion.aprendiz.usuario.numero_documento }}</td>
                             <td>{{ inscripcion.aprendiz.ficha.numero_ficha }}</td>
                             <td class="text-center">
                                 <div class="form-check form-switch d-inline-flex mb-1">

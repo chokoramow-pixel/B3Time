@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.lista_eventos, name="lista"),
     path("panel/", views.EventoListView.as_view(), name="panel_lista"),
     path("panel/exportar/", views.exportar_eventos, name="panel_exportar"),
+    path("panel/inscritos/exportar/", views.exportar_inscritos, name="panel_exportar_inscritos"),
     path("panel/crear/", views.EventoCreateView.as_view(), name="crear"),
     path("panel/<int:pk>/editar/", views.EventoUpdateView.as_view(), name="editar"),
     path("panel/<int:pk>/eliminar/", views.EventoDeleteView.as_view(), name="eliminar"),

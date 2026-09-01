@@ -142,6 +142,53 @@ def exportar_eventos(request):
     return responder_export(request, "eventos", "Eventos", encabezados, filas, "eventos:panel_lista")
 
 
+# ---------- Exportar los inscritos de un evento puntual ----------
+# A diferencia de exportar_eventos (que exporta TODOS los eventos),
+# esta exporta los inscritos de UN evento -- por eso el id del evento
+# viaja como parámetro de la URL (?evento_id=), no en la ruta, así
+# reutiliza el mismo componente de botones que ya usan las demás
+# listas (ver export_extra_params en checklist_inscritos).
+
+@personal_bienestar_requerido
+def exportar_inscritos(request):
+    evento_id = request.GET.get("evento_id")
+    evento = get_object_or_404(Evento, id=evento_id)
+
+    inscripciones = Inscripcion.objects.filter(
+        evento=evento
+    ).exclude(
+        estado="cancelada"
+    ).select_related(
+        "aprendiz__usuario", "aprendiz__ficha", "asistencia"
+    ).order_by("aprendiz__usuario__apellidos", "aprendiz__usuario__nombres")
+
+    def horas_de(inscripcion):
+        if not hasattr(inscripcion, "asistencia") or not inscripcion.asistencia.asistio:
+            return ""
+        registro = inscripcion.asistencia.horas_bienestar.first()
+        return registro.cantidad_horas if registro else ""
+
+    def asistio_texto(inscripcion):
+        return "Sí" if hasattr(inscripcion, "asistencia") and inscripcion.asistencia.asistio else "No"
+
+    encabezados = ["Aprendiz", "Tipo Documento", "Documento", "Ficha", "Asistió", "Horas"]
+    filas = [
+        [
+            i.aprendiz.usuario.get_full_name(),
+            i.aprendiz.usuario.tipo_documento,
+            i.aprendiz.usuario.numero_documento,
+            i.aprendiz.ficha.numero_ficha,
+            asistio_texto(i),
+            horas_de(i),
+        ]
+        for i in inscripciones
+    ]
+
+    return responder_export(
+        request, "inscritos", f"Inscritos - {evento.titulo}", encabezados, filas, "eventos:panel_lista"
+    )
+
+
 # ---------- Checklist de asistencia y horas de bienestar ----------
 # El "checklist manual" del que habla el roadmap: Bienestar entra a un
 # evento, ve a todos los inscritos, marca quién asistió y con cuántas
@@ -193,6 +240,7 @@ def checklist_inscritos(request, evento_id):
     return render(request, "eventos/checklist_inscritos.html", {
         "evento": evento,
         "inscripciones": inscripciones,
+        "export_extra_params": f"evento_id={evento.id}",
     })
 
 

@@ -79,11 +79,14 @@ def _fecha_exportacion():
 
 def _pesos_de_columna(encabezados, filas, minimo=6, maximo=40):
     """
-    Calcula, para cada columna, un "peso" relativo según qué tan largo
-    es su contenido (el encabezado y el dato más largo de esa
-    columna) -- así una columna como "Estado" queda angosta y una
-    como "Descripción" queda ancha, automáticamente, sin importar
-    cuántas columnas nuevas se agreguen en el futuro.
+    Calcula, para cada columna, un "peso" relativo -- pero le da
+    mucho más peso al DATO real que al encabezado. El encabezado se
+    puede partir en dos líneas (el ajuste de texto está activo en
+    los 3 formatos), el dato en general no -- así que un encabezado
+    largo con datos cortos (como "Tipo Documento" -> "CC") ya no
+    ensancha la columna más de lo que su contenido real necesita;
+    el encabezado solo empuja el ancho a la mitad de su propio largo,
+    y el resto lo resuelve el salto de línea.
     """
     pesos = []
     for i, encabezado in enumerate(encabezados):
@@ -92,7 +95,9 @@ def _pesos_de_columna(encabezados, filas, minimo=6, maximo=40):
             (len(_valor_a_texto(fila[i])) for fila in filas if i < len(fila)),
             default=0,
         )
-        peso = max(largo_encabezado, largo_datos, minimo)
+        peso = max(largo_datos, minimo)
+        if largo_encabezado > peso:
+            peso = max(peso, largo_encabezado * 0.6)
         pesos.append(min(peso, maximo))
     return pesos
 
@@ -153,7 +158,7 @@ def exportar_excel(nombre_archivo, titulo, encabezados, filas, exportado_por="Si
         ) if indice_fila % 2 == 1 else None
         for celda in hoja[fila_actual]:
             celda.border = borde_fino
-            celda.alignment = Alignment(vertical="center")
+            celda.alignment = Alignment(vertical="center", wrap_text=True)
             if relleno_zebra:
                 celda.fill = relleno_zebra
 
@@ -329,8 +334,9 @@ def exportar_word(nombre_archivo, titulo, encabezados, filas, exportado_por="Sis
 
 def exportar_pdf(nombre_archivo, titulo, encabezados, filas, exportado_por="Sistema"):
     from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
     from reportlab.lib.pagesizes import landscape, letter
-    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
@@ -403,15 +409,30 @@ def exportar_pdf(nombre_archivo, titulo, encabezados, filas, exportado_por="Sist
     total_peso = sum(pesos) or 1
     anchos_columnas = [ancho_disponible * peso / total_peso for peso in pesos]
 
-    datos_tabla = [encabezados] + [[_valor_a_texto(v) for v in fila] for fila in filas]
+    # ---------- Celdas como Paragraph, no texto plano ----------
+    # reportlab no ajusta línea por sí solo en una celda de texto
+    # plano -- con columnas ahora más ajustadas al contenido real
+    # (ver _pesos_de_columna), un encabezado o dato que no quepa en
+    # una sola línea necesita poder partirse en dos, en vez de
+    # desbordarse fuera de la celda.
+    estilo_encabezado_celda = ParagraphStyle(
+        "encabezado_celda", fontName="Helvetica-Bold", fontSize=8,
+        textColor=colors.white, alignment=TA_CENTER, leading=10,
+    )
+    estilo_dato_celda = ParagraphStyle(
+        "dato_celda", fontName="Helvetica", fontSize=7.5,
+        textColor=colors.HexColor("#1a1a1a"), alignment=TA_LEFT, leading=9,
+    )
+
+    fila_encabezados_pdf = [Paragraph(_valor_a_texto(h), estilo_encabezado_celda) for h in encabezados]
+    datos_tabla = [fila_encabezados_pdf] + [
+        [Paragraph(_valor_a_texto(v), estilo_dato_celda) for v in fila]
+        for fila in filas
+    ]
+
     tabla = Table(datos_tabla, colWidths=anchos_columnas, repeatRows=1)
     tabla.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{COLOR_VERDE}")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, 0), 8),
-        ("FONTSIZE", (0, 1), (-1, -1), 7.5),
-        ("ALIGN", (0, 0), (-1, 0), "CENTER"),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(f"#{COLOR_BORDE}")),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(f"#{COLOR_VERDE_CLARO}")]),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),

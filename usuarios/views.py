@@ -634,11 +634,12 @@ def exportar_aprendices(request):
     # así "Exportar" nunca se puede desalinear de lo que se ve filtrado.
     aprendices = AprendizFilter(request.GET, queryset=queryset).qs
 
-    encabezados = ["Nombres", "Apellidos", "Documento", "Ficha", "Programa", "Estado"]
+    encabezados = ["Nombres", "Apellidos", "Tipo Documento", "Documento", "Ficha", "Programa", "Estado"]
     filas = [
         [
             a.usuario.nombres,
             a.usuario.apellidos,
+            a.usuario.tipo_documento,
             a.usuario.numero_documento,
             a.ficha.numero_ficha,
             a.ficha.programa_formacion.nombre,
