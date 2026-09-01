@@ -1,8 +1,6 @@
 from django.contrib import admin
-from django.db import models
 
-from bienestar.models import HorasBienestar, Asesoria
-from core.widgets import AdminSplitDateTimeSinSegundos
+from bienestar.models import HorasBienestar, Asesoria, MiembroBienestar
 
 
 @admin.register(HorasBienestar)
@@ -13,6 +11,8 @@ class HorasBienestarAdmin(admin.ModelAdmin):
 @admin.register(Asesoria)
 class AsesoriaAdmin(admin.ModelAdmin):
     list_display = ("id", "tipo", "aprendiz", "personal_bienestar", "estado", "fecha_solicitud")
-    formfield_overrides = {
-        models.DateTimeField: {"widget": AdminSplitDateTimeSinSegundos},
-    }
+
+
+@admin.register(MiembroBienestar)
+class MiembroBienestarAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre", "cargo", "correo_asesorias", "estado")
