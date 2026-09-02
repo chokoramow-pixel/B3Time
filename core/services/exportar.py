@@ -85,8 +85,8 @@ def _pesos_de_columna(encabezados, filas, minimo=6, maximo=40):
     los 3 formatos), el dato en general no -- así que un encabezado
     largo con datos cortos (como "Tipo Documento" -> "CC") ya no
     ensancha la columna más de lo que su contenido real necesita;
-    el encabezado solo empuja el ancho a la mitad de su propio largo,
-    y el resto lo resuelve el salto de línea.
+    el encabezado solo empuja el ancho una fracción de su propio
+    largo, y el resto lo resuelve el salto de línea.
     """
     pesos = []
     for i, encabezado in enumerate(encabezados):
@@ -141,9 +141,15 @@ def exportar_excel(nombre_archivo, titulo, encabezados, filas, exportado_por="Si
     hoja.append([])  # separación
 
     # ---------- Tabla de datos ----------
-    fila_encabezados = hoja.max_row + 1
+    # Importante: fila_encabezados se calcula DESPUÉS de escribir la
+    # fila, no antes -- un append() con una fila vacía (la de arriba,
+    # de separación) no siempre actualiza max_row en openpyxl, así
+    # que calcularlo antes podía apuntar a la fila equivocada (la de
+    # separación) y dejar los encabezados con la altura por defecto,
+    # cortando el texto cuando necesitaba partirse en 2 líneas.
     hoja.append(encabezados)
-    hoja.row_dimensions[fila_encabezados].height = 20
+    fila_encabezados = hoja.max_row
+    hoja.row_dimensions[fila_encabezados].height = 32
     for celda in hoja[fila_encabezados]:
         celda.font = Font(bold=True, color="FFFFFF", size=10)
         celda.fill = PatternFill(start_color=COLOR_VERDE, end_color=COLOR_VERDE, fill_type="solid")
@@ -158,14 +164,14 @@ def exportar_excel(nombre_archivo, titulo, encabezados, filas, exportado_por="Si
         ) if indice_fila % 2 == 1 else None
         for celda in hoja[fila_actual]:
             celda.border = borde_fino
-            celda.alignment = Alignment(vertical="center", wrap_text=True)
+            celda.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
             if relleno_zebra:
                 celda.fill = relleno_zebra
 
     # ---------- Anchos de columna, según contenido ----------
     pesos = _pesos_de_columna(encabezados, filas)
     for i, peso in enumerate(pesos, start=1):
-        hoja.column_dimensions[get_column_letter(i)].width = peso + 2
+        hoja.column_dimensions[get_column_letter(i)].width = peso + 5
 
     # ---------- Encabezados fijos al desplazar, y filtro rápido ----------
     hoja.freeze_panes = f"A{fila_encabezados + 1}"
@@ -213,11 +219,35 @@ def _repetir_fila_como_encabezado(fila_tabla):
     propiedades_fila.append(encabezado_repetido)
 
 
+def _agregar_cuadricula(tabla, color_borde):
+    """
+    Igual que con "repetir encabezado": Word no expone en python-docx
+    una forma directa de ponerle línea a cada celda de una tabla, así
+    que se arma el bloque de bordes a mano en el XML y se le pega a
+    las propiedades de la tabla completa (tblBorders), en vez de
+    tener que repetirlo celda por celda.
+    """
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    propiedades_tabla = tabla._tbl.tblPr
+    bordes = OxmlElement("w:tblBorders")
+    for nombre in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        borde = OxmlElement(f"w:{nombre}")
+        borde.set(qn("w:val"), "single")
+        borde.set(qn("w:sz"), "4")
+        borde.set(qn("w:space"), "0")
+        borde.set(qn("w:color"), color_borde)
+        bordes.append(borde)
+    propiedades_tabla.append(bordes)
+
+
 def exportar_word(nombre_archivo, titulo, encabezados, filas, exportado_por="Sistema"):
     from docx import Document
     from docx.enum.section import WD_ORIENT
     from docx.enum.table import WD_TABLE_ALIGNMENT
     from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
     from docx.shared import Inches, Pt, RGBColor
 
@@ -266,6 +296,7 @@ def exportar_word(nombre_archivo, titulo, encabezados, filas, exportado_por="Sis
     tabla.autofit = False
 
     _repetir_fila_como_encabezado(tabla.rows[0])
+    _agregar_cuadricula(tabla, COLOR_BORDE)
 
     celdas_encabezado = tabla.rows[0].cells
     for i, encabezado_col in enumerate(encabezados):
@@ -296,6 +327,7 @@ def exportar_word(nombre_archivo, titulo, encabezados, filas, exportado_por="Sis
                 celda._tc.get_or_add_tcPr().append(sombreado)
 
             for parrafo_celda in celda.paragraphs:
+                parrafo_celda.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 for run in parrafo_celda.runs:
                     run.font.size = Pt(9)
 
@@ -334,7 +366,7 @@ def exportar_word(nombre_archivo, titulo, encabezados, filas, exportado_por="Sis
 
 def exportar_pdf(nombre_archivo, titulo, encabezados, filas, exportado_por="Sistema"):
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.enums import TA_CENTER
     from reportlab.lib.pagesizes import landscape, letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
@@ -421,7 +453,7 @@ def exportar_pdf(nombre_archivo, titulo, encabezados, filas, exportado_por="Sist
     )
     estilo_dato_celda = ParagraphStyle(
         "dato_celda", fontName="Helvetica", fontSize=7.5,
-        textColor=colors.HexColor("#1a1a1a"), alignment=TA_LEFT, leading=9,
+        textColor=colors.HexColor("#1a1a1a"), alignment=TA_CENTER, leading=9,
     )
 
     fila_encabezados_pdf = [Paragraph(_valor_a_texto(h), estilo_encabezado_celda) for h in encabezados]

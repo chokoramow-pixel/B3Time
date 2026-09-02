@@ -49,7 +49,7 @@ Gestionar publicaciones | Be Time
                         <td>
                             <span class="badge text-bg-light border">{{ publicacion.get_estado_display|default:publicacion.estado }}</span>
                         </td>
-                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y H:i"|default:"—" }}</td>
+                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y h:i A"|default:"—" }}</td>
                         <td class="text-end">
                             <a href="{% url 'publicaciones:editar' publicacion.id %}" class="btn btn-sm btn-outline-success">
                                 Editar

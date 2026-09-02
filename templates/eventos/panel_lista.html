@@ -49,7 +49,7 @@ Gestionar eventos | Be Time
                     <tr data-estado="{{ evento.estado }}">
                         <td>{{ evento.titulo }}</td>
                         <td>{{ evento.lugar }}</td>
-                        <td>{{ evento.fecha_inicio|date:"d/m/Y H:i" }}</td>
+                        <td>{{ evento.fecha_inicio|date:"d/m/Y h:i A" }}</td>
                         <td>{{ evento.horas_otorgadas }}</td>
                         <td>
                             <span class="badge text-bg-light border">{{ evento.get_estado_display|default:evento.estado }}</span>

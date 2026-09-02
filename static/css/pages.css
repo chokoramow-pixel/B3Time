@@ -149,6 +149,27 @@
 .home-hero__chip--deportes  { bottom: 6%; left: -4%; }
 .home-hero__chip--cultura   { bottom: 2%; right: 4%; }
 
+/* En pantallas angostas, los chips que sobresalían un poco del
+   círculo (offsets negativos) quedaban recortados por el borde de
+   la sección -- aquí se quedan dentro del propio círculo, y más
+   chicos, para que quepan sin desbordarse. */
+@media (max-width: 576px) {
+    .home-hero__art {
+        max-width: 280px;
+    }
+
+    .home-hero__chip {
+        font-size: 0.68rem;
+        padding: 0.3rem 0.55rem;
+        gap: 0.3rem;
+    }
+
+    .home-hero__chip--salud     { top: 6%;  left: 6%; }
+    .home-hero__chip--asesorias { top: 10%; right: 2%; }
+    .home-hero__chip--deportes  { bottom: 8%; left: 2%; }
+    .home-hero__chip--cultura   { bottom: 4%; right: 6%; }
+}
+
 /* Contenedor que gira con los 4 chips adentro; cada chip gira en
    sentido contrario a la misma velocidad para que el texto se
    mantenga siempre derecho mientras da la vuelta alrededor de la
@@ -319,72 +340,87 @@
     white-space: nowrap;
 }
 
-/* ---------- Eventos ---------- */
+/* ---------- Eventos (misma base que .home-card, con insignia
+   de fecha superpuesta sobre la imagen) ---------- */
 
-.home-evento {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.1rem;
-    background-color: #fff;
+.home-evento-card {
+    display: block;
     border: 1px solid var(--bt-borde);
-    border-radius: 12px;
+    border-radius: 16px;
+    overflow: hidden;
+    height: 100%;
+    background-color: #fff;
+    text-decoration: none;
+    color: inherit;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.home-evento:hover {
-    transform: translateX(4px);
+.home-evento-card:hover {
+    transform: translateY(-4px);
     border-color: var(--bt-verde);
-    box-shadow: 0 12px 24px -16px rgba(22, 36, 26, 0.35);
+    box-shadow: 0 20px 34px -18px rgba(22, 36, 26, 0.4);
+    color: inherit;
 }
 
-.home-evento + .home-evento {
-    margin-top: 0.75rem;
-}
-
-.home-evento__fecha {
-    flex: 0 0 auto;
-    width: 3.4rem;
-    height: 3.4rem;
-    border-radius: 10px;
+.home-evento-card__media {
+    position: relative;
+    aspect-ratio: 16 / 10;
     background-color: var(--bt-fondo-alt);
-    color: var(--bt-verde-oscuro);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    line-height: 1;
+    color: var(--bt-verde);
+    font-size: 2rem;
 }
 
-.home-evento__img {
-    flex: 0 0 auto;
-    width: 3.4rem;
-    height: 3.4rem;
-    border-radius: 10px;
+.home-evento-card__media img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
-.home-evento__fecha .dia {
-    font-size: 1.15rem;
-    font-weight: 700;
+.home-evento-card__fecha {
+    position: absolute;
+    top: 0.85rem;
+    left: 0.85rem;
+    min-width: 3.1rem;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 0.35rem 0.5rem;
+    text-align: center;
+    line-height: 1.1;
+    box-shadow: 0 8px 18px -8px rgba(22, 36, 26, 0.4);
 }
 
-.home-evento__fecha .mes {
-    font-size: 0.65rem;
+.home-evento-card__fecha .dia {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--bt-verde-oscuro);
+}
+
+.home-evento-card__fecha .mes {
+    display: block;
+    font-size: 0.62rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    color: var(--bt-verde);
 }
 
-.home-evento__horas {
-    flex: 0 0 auto;
+.home-evento-card__body {
+    padding: 1.15rem 1.25rem 1.4rem;
+}
+
+.home-evento-card__horas {
+    display: inline-block;
     font-size: 0.78rem;
     font-weight: 600;
     color: var(--bt-verde-oscuro);
     background-color: var(--bt-fondo-alt);
     border-radius: 999px;
     padding: 0.3rem 0.75rem;
-    white-space: nowrap;
+    margin-top: 0.65rem;
 }
 
 /* ---------- Servicios ---------- */

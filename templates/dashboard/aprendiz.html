@@ -1,13 +1,13 @@
 {% extends 'base_private.html' %}
 
 {% block title %}
-Mi panel | Be Time
+Mi panel Aprendiz | Be Time
 {% endblock %}
 
 {% block dashboard_content %}
 
 <h1 class="h3 fw-bold mb-1">
-    Hola, {{ request.user.get_full_name }}
+    Hola👋, {{ request.user.get_full_name }}
 </h1>
 
 <p class="text-muted mb-4">
@@ -79,7 +79,7 @@ Mi panel | Be Time
                                         {{ inscripcion.evento.titulo }}
                                     </a>
                                 </td>
-                                <td>{{ inscripcion.evento.fecha_inicio|date:"d/m/Y H:i" }}</td>
+                                <td>{{ inscripcion.evento.fecha_inicio|date:"d/m/Y h:i A" }}</td>
                                 <td><span class="badge text-bg-light border">{{ inscripcion.get_estado_display }}</span></td>
                                 <td>
                                     {% if inscripcion.estado == "inscrito" %}

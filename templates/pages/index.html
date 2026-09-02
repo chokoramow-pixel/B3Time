@@ -23,7 +23,7 @@ Be Time | Bienestar al Aprendiz - SENA
                 </h1>
 
                 <p class="home-hero__lead mb-4">
-                    La plataforma para gestionar el <span class="text-bt-verde fw-bold underline">Bienestar Al Aprendiz</span> del Servicio Nacional
+                    La plataforma virtual de <span class="text-bt-verde fw-bold underline">Bienestar Al Aprendiz</span> del Servicio Nacional
                     de Aprendizaje: consulta publicaciones, inscríbete a eventos y lleva el
                     control de tus horas de bienestar en un solo lugar.
                 </p>
@@ -60,13 +60,13 @@ Be Time | Bienestar al Aprendiz - SENA
                             <i class="bi bi-heart-pulse-fill"></i> Salud
                         </div>
                         <div class="home-hero__chip home-hero__chip--asesorias">
-                            <i class="bi bi-mortarboard-fill"></i> Orientaciones
+                            <i class="bi bi-mortarboard-fill"></i> Asesorías
                         </div>
                         <div class="home-hero__chip home-hero__chip--deportes">
                             <i class="bi bi-trophy-fill"></i> Deportes
                         </div>
                         <div class="home-hero__chip home-hero__chip--cultura">
-                            <i class="bi bi-palette-fill"></i> Arte y Cultura
+                            <i class="bi bi-palette-fill"></i> Cultura
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,8 @@ Be Time | Bienestar al Aprendiz - SENA
                 </h2>
 
                 <p class="lead text-muted">
-                    Be Time centraliza la gestión de los servicios ofrecidos por <span class="text-bt-verde fw-bold underline">Bienestar Al Aprendiz</span>, permitiendo consultar publicaciones, eventos y asesorías, y
+                    <span class="text-bt-verde fw-bold underline">Bet Time</span> centraliza la gestión de los servicios ofrecidos por <span class="text-bt-verde fw-bold underline">Bienestar Al Aprendiz</span>, 
+                    permitiendo consultar publicaciones, eventos y asesorías, y
                     administrar las horas de bienestar de manera organizada, trazable y segura.
                 </p>
 
@@ -162,30 +163,37 @@ Be Time | Bienestar al Aprendiz - SENA
         </div>
 
         {% if eventos %}
-            <div class="mb-4">
+            <div class="row g-4 mb-4">
                 {% for evento in eventos %}
-                    <div class="home-evento">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="{% url 'eventos:detalle' evento.id %}" class="home-evento-card">
 
-                        {% if evento.imagen %}
-                            <img src="{{ evento.imagen.url }}" alt="" class="home-evento__img">
-                        {% endif %}
+                            <div class="home-evento-card__media">
+                                {% if evento.imagen %}
+                                    <img src="{{ evento.imagen.url }}" alt="{{ evento.titulo }}">
+                                {% else %}
+                                    <i class="bi bi-calendar-event"></i>
+                                {% endif %}
 
-                        <div class="home-evento__fecha">
-                            <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
-                            <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
-                        </div>
-
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">{{ evento.titulo }}</div>
-                            <div class="text-muted small">
-                                <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
+                                <div class="home-evento-card__fecha">
+                                    <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
+                                    <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="home-evento__horas">
-                            {{ evento.horas_otorgadas }} horas
-                        </div>
+                            <div class="home-evento-card__body">
+                                <h3 class="h6 fw-bold mb-2">
+                                    {{ evento.titulo }}
+                                </h3>
+                                <div class="text-muted small">
+                                    <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
+                                </div>
+                                <span class="home-evento-card__horas">
+                                    {{ evento.horas_otorgadas }} horas de bienestar
+                                </span>
+                            </div>
 
+                        </a>
                     </div>
                 {% endfor %}
             </div>
@@ -229,7 +237,7 @@ Be Time | Bienestar al Aprendiz - SENA
                     <div class="home-servicio__icono">
                         <i class="bi bi-mortarboard-fill"></i>
                     </div>
-                    <div class="fw-semibold">Orientaciones</div>
+                    <div class="fw-semibold">Asesorías</div>
                 </div>
             </div>
 
@@ -247,7 +255,7 @@ Be Time | Bienestar al Aprendiz - SENA
                     <div class="home-servicio__icono">
                         <i class="bi bi-palette-fill"></i>
                     </div>
-                    <div class="fw-semibold">Arte y Cultura</div>
+                    <div class="fw-semibold">Cultura</div>
                 </div>
             </div>
 
@@ -258,8 +266,8 @@ Be Time | Bienestar al Aprendiz - SENA
 <!-- ============ ACCESO PERSONAL ADMINISTRATIVO ============ -->
 <section class="py-4 text-center">
     <div class="container">
-        <a href="{% url 'usuarios:login_personal' %}" class="text-bt-verde fw-bold text-decoration-none small">
-            <i class="bi bi-shield-lock"></i> Acceso personal administrativo
+        <a href="{% url 'usuarios:login_personal' %}" class="text-muted text-decoration-none small">
+            <i class="bi bi-shield-lock"></i> <span class="text-bt-verde fw-bold underline">Acceso Personal Administrativo</span>
         </a>
     </div>
 </section>
